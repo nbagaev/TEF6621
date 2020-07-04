@@ -109,7 +109,6 @@ unsigned int freq(unsigned long freq_rf,uint8_t band)
   }
 }
 
-
 //USN FM ultrasonic noise; 0 to 15 = 0 % to 100 % equivalent FM modulation at 100 kHz ultrasonic noise content (USN)
 uint8_t usn()
 {
