@@ -74,11 +74,13 @@
                        //11 = tuning ready and muted
                        
 //local fm stations                      
-unsigned long BFBS = 103000;
-unsigned long WDR4 = 100500;
-unsigned long EINSLIVE = 105500;
-unsigned long WDR5 = 90600;
-unsigned long WDR2B = 93200;
+const unsigned long WDR4 = 100500;
+const unsigned long EINSLIVE = 105500;
+const unsigned long WDR5 = 90600;
+const unsigned long WDR2 = 93200;
+const unsigned long WDR3 = 97000;
+
+unsigned long current_freq;
 
 //level detector (RSSI) 0 to 255 = 0.25 V to 4.25 V
 uint8_t level()
@@ -86,10 +88,18 @@ uint8_t level()
   return readDataByte(LEVEL);
 }
 
+uint8_t ifcount()
+{
+  return readDataByte(IFCOUNTER) & B00011111;
+}
+
 //if signal good -> station found
+//ifcount=0-31 (0=good)
+//usn=0-15 (0=good)
+//wam=0-15 (0=good)
 bool stationFound()
 {
-  return (usn() < 2) && (level() > 200) && (wam() < 2 );
+  return (usn() < 3) && (level() > 120) && (wam() < 3) && (ifcount() < 3);
 }
 
 //compute frequency from kHz to needed format
@@ -122,13 +132,14 @@ uint8_t wam()
 }
 
 //tune to new station with short mute time;
-void preset(unsigned long freq_rf, uint8_t band)
+unsigned long preset(unsigned long freq_rf, uint8_t band)
 {
   Wire.beginTransmission(BUS_SLAVE_ADRESS);
   Wire.write(MODE_PRESET | TUNER0);
   Wire.write(BAND_FM | freq12_8(freq(freq_rf, band)));
   Wire.write(freq7_0(freq(freq_rf, band)));
-  Wire.endTransmission();  
+  Wire.endTransmission();
+  return freq_rf;  
 }
 
 //tune to new station and stay muted;
@@ -185,7 +196,7 @@ unsigned long nextStationFrom(unsigned long freq, uint8_t band)
     {
       i++;
       search(freq + 100 * i, band);
-      delay(100);
+      delay(50);
       found = stationFound();
     }while((!found) && (!(i == steps))); 
   }
@@ -198,11 +209,12 @@ void setup()
 {
   Wire.begin();
   Serial.begin(9600);
-  
-  preset(WDR5, BAND_FM); 
-  delay(10000); 
-    
-  Serial.println(nextStationFrom(WDR5, BAND_FM));
+  current_freq = WDR4;  
+  current_freq = preset(current_freq, BAND_FM);
+  Serial.println(current_freq);
+  delay(10000);     
+  current_freq = nextStationFrom(current_freq, BAND_FM);
+  Serial.println(current_freq);
 }
 
 void loop()
