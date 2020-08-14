@@ -2,9 +2,9 @@
 
 #include <Wire.h> 
 
-#define BUS_SLAVE_ADRESS B1100000 //I2C slave adress 
+#define BUS_SLAVE_ADDRESS B1100000 //I2C slave address 
 
-//band for subadress TUNER0 
+//band for subaddress TUNER0 
 #define BAND_LW_MW   B00000000 //AM: LW and MW
 #define BAND_FM      B00100000 //FM: standard Europe, USA and Japan
 #define BAND_SW      B01000000 //AM: SW
@@ -20,7 +20,7 @@
 #define MODE_MIRROR_TEST B11000000  //check current image situation and select injection mode for best result
 #define MODE_END         B11100000  //release mute from search mode or AF check mode
 
-//subadresses for write
+//subaddresses for write
 #define TUNER0       0x0   //default data byte: B00100110
 #define TUNER1       0x1   //default data byte: B11111010
 #define TUNER2       0x2   //default data byte: B00000000
@@ -134,7 +134,7 @@ uint8_t wam()
 //tune to new station with short mute time;
 unsigned long preset(unsigned long freq_rf, uint8_t band)
 {
-  Wire.beginTransmission(BUS_SLAVE_ADRESS);
+  Wire.beginTransmission(BUS_SLAVE_ADDRESS);
   Wire.write(MODE_PRESET | TUNER0);
   Wire.write(BAND_FM | freq12_8(freq(freq_rf, band)));
   Wire.write(freq7_0(freq(freq_rf, band)));
@@ -145,7 +145,7 @@ unsigned long preset(unsigned long freq_rf, uint8_t band)
 //tune to new station and stay muted;
 void search(unsigned long freq_rf, uint8_t band)
 {
-  Wire.beginTransmission(BUS_SLAVE_ADRESS);
+  Wire.beginTransmission(BUS_SLAVE_ADDRESS);
   Wire.write(MODE_SEARCH | TUNER0);
   Wire.write(BAND_FM | freq12_8(freq(freq_rf, band)));
   Wire.write(freq7_0(freq(freq_rf, band)));
@@ -155,18 +155,18 @@ void search(unsigned long freq_rf, uint8_t band)
 //release mute from search mode or AF check mode
 void endMute()
 {
-  Wire.beginTransmission(BUS_SLAVE_ADRESS);
+  Wire.beginTransmission(BUS_SLAVE_ADDRESS);
   Wire.write(MODE_END | TUNER0);
   Wire.endTransmission();  
 }
 
-//read data byte from adress
-uint8_t readDataByte(uint8_t adress)
+//read data byte from address
+uint8_t readDataByte(uint8_t address)
 {  
   uint8_t data_byte;
-  Wire.beginTransmission(BUS_SLAVE_ADRESS);    
-  Wire.requestFrom(BUS_SLAVE_ADRESS, adress + 1);
-  for(uint8_t i = 0; i < adress + 1; i++)
+  Wire.beginTransmission(BUS_SLAVE_ADDRESS);    
+  Wire.requestFrom(BUS_SLAVE_ADDRESS, address + 1);
+  for(uint8_t i = 0; i < address + 1; i++)
     data_byte = Wire.read(); 
   Wire.endTransmission(); 
   return data_byte;   
